@@ -14,6 +14,7 @@ Finance-Digest/.env
 Finance-Digest/finance_digest.db
 Finance-Digest/finance_digest.db-wal
 Finance-Digest/finance_digest.db-shm
+Finance-Digest/*.db.bak
 site-generator/data.db
 data.db
 
