@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paper Portfolio</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0; min-height: 100vh; line-height: 1.6;
+    }
+    header {
+      background: #1e293b; border-bottom: 1px solid #334155; padding: 1.5rem 2rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
+    .subtitle { margin: 0; font-size: 0.85rem; color: #64748b; }
+    main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    /* Summary grid */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .stat-card {
+      background: #1e293b; border-radius: 0.5rem; padding: 1rem 1.25rem;
+      display: flex; flex-direction: column; gap: 0.2rem;
+    }
+    .stat-label {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b;
+    }
+    .stat-value { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; }
+    .stat-value.pos { color: #22c55e; }
+    .stat-value.neg { color: #ef4444; }
+
+    /* Chart */
+    .chart-card {
+      background: #1e293b; border-radius: 0.5rem;
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .chart-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .chart-title { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .view-btns { display: flex; gap: 0.35rem; }
+    .view-btn {
+      background: #0f172a; border: 1px solid #334155; color: #94a3b8;
+      padding: 0.25rem 0.75rem; border-radius: 0.35rem;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .view-btn:hover { border-color: #60a5fa; color: #60a5fa; }
+    .view-btn.active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+    .chart-canvas-wrap { position: relative; height: 220px; }
+
+    /* Section headings */
+    .sub-hd {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #60a5fa; margin: 1.75rem 0 0.6rem;
+    }
+
+    /* Holdings grid */
+    .holdings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .holding-card {
+      background: #1e293b; border-radius: 0.5rem; padding: 1rem 1.25rem;
+      border-left: 3px solid #334155;
+    }
+    .holding-card.pos { border-left-color: #22c55e; }
+    .holding-card.neg { border-left-color: #ef4444; }
+    .holding-card.cash-card { border-left-color: #64748b; }
+    .h-ticker { font-size: 1rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.04em; }
+    .h-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.35rem; }
+    .h-key { font-size: 0.72rem; color: #64748b; }
+    .h-val { font-size: 0.82rem; color: #cbd5e1; font-weight: 500; }
+    .h-pnl { font-size: 0.9rem; font-weight: 700; }
+    .h-pnl.pos { color: #22c55e; }
+    .h-pnl.neg { color: #ef4444; }
+
+    /* Trade log table */
+    .tbl-wrap { overflow-x: auto; margin-bottom: 1rem; }
+    .dt {
+      width: 100%; border-collapse: collapse; font-size: 0.875rem;
+      background: #1e293b; border-radius: 0.5rem; overflow: hidden;
+    }
+    .dt thead { background: #0f172a; }
+    .dt th {
+      text-align: left; padding: 0.6rem 0.85rem; font-size: 0.72rem;
+      text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; white-space: nowrap;
+    }
+    .dt td { padding: 0.55rem 0.85rem; border-top: 1px solid #334155; vertical-align: middle; }
+    .dt tbody tr:hover { background: #263244; }
+    .tc { font-weight: 700; color: #f1f5f9; letter-spacing: 0.03em; }
+    .rc { color: #94a3b8; font-size: 0.8rem; max-width: 260px; }
+    .buy  { color: #22c55e; font-weight: 700; }
+    .sell { color: #ef4444; font-weight: 700; }
+
+    .loading { color: #475569; font-size: 0.85rem; padding: 1rem 0; }
+
+    footer {
+      text-align: center; padding: 2rem 1.5rem; font-size: 0.78rem;
+      color: #475569; border-top: 1px solid #1e293b; margin-top: 2rem;
+    }
+    @media (max-width: 600px) {
+      header { padding: 1rem; }
+      main { padding: 0 1rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="/nav.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <a class="brand" href="/">Finance Digest</a>
+    <a class="tab" href="/">Analyses</a>
+    <a class="tab" href="/scans.html">Market Scans</a>
+    <a class="tab" href="/briefings.html">Briefings</a>
+    <a class="tab active" href="/portfolio.html">Portfolio</a>
+    <a class="tab" href="/glossary.html">Glossary</a>
+  </nav>
+
+  <header>
+    <h1>Paper Portfolio</h1>
+    <p class="subtitle" x-data="{ d: '' }" x-init="fetch('/api/portfolio').then(r=>r.json()).then(p=>{ d = p.state?.updated_at || '' })">
+      <span x-text="d ? 'Updated ' + d : 'Loading…'"></span>
+    </p>
+  </header>
+
+  <main x-data="portfolio()" x-init="init()">
+
+    <!-- Summary grid -->
+    <div class="summary-grid">
+      <div class="stat-card">
+        <span class="stat-label">NAV</span>
+        <span class="stat-value" x-text="state ? '$' + fmt(state.nav) : '—'"></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Return</span>
+        <span class="stat-value"
+          :class="state && state.total_return_pct >= 0 ? 'pos' : 'neg'"
+          x-text="state ? (state.total_return_pct >= 0 ? '+' : '') + state.total_return_pct.toFixed(1) + '%' : '—'">
+        </span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Invested</span>
+        <span class="stat-value" x-text="state ? '$' + fmt(state.invested) : '—'"></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Cash</span>
+        <span class="stat-value" x-text="state ? '$' + fmt(state.cash) : '—'"></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Since</span>
+        <span class="stat-value" style="font-size:0.95rem" x-text="state ? state.start_date : '—'"></span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Portfolio vs S&amp;P 500 (normalized to $10,000)</span>
+        <div class="view-btns">
+          <button class="view-btn" :class="view === 'week'  && 'active'" @click="setView('week')">Week</button>
+          <button class="view-btn" :class="view === 'month' && 'active'" @click="setView('month')">Month</button>
+          <button class="view-btn" :class="view === 'year'  && 'active'" @click="setView('year')">Year</button>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas id="navChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Holdings grid -->
+    <h3 class="sub-hd">Holdings</h3>
+    <div class="holdings-grid">
+      <template x-for="p in positions" :key="p.ticker">
+        <div class="holding-card" :class="pnlClass(p)">
+          <div class="h-ticker" x-text="p.ticker"></div>
+          <div class="h-row">
+            <span class="h-key">Shares</span>
+            <span class="h-val" x-text="p.shares.toFixed(4)"></span>
+          </div>
+          <div class="h-row">
+            <span class="h-key">Price</span>
+            <span class="h-val" x-text="'$' + fmt(p.current_price)"></span>
+          </div>
+          <div class="h-row">
+            <span class="h-key">Value</span>
+            <span class="h-val" x-text="'$' + fmt(p.shares * p.current_price)"></span>
+          </div>
+          <div class="h-row">
+            <span class="h-key">P&amp;L</span>
+            <span class="h-pnl" :class="pnlClass(p)" x-text="pnlStr(p)"></span>
+          </div>
+        </div>
+      </template>
+      <template x-if="state">
+        <div class="holding-card cash-card">
+          <div class="h-ticker">CASH</div>
+          <div class="h-row">
+            <span class="h-key">Value</span>
+            <span class="h-val" x-text="'$' + fmt(state.cash)"></span>
+          </div>
+          <div class="h-row">
+            <span class="h-key">Weight</span>
+            <span class="h-val" x-text="state ? (state.cash / state.nav * 100).toFixed(1) + '%' : '—'"></span>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Trade log -->
+    <h3 class="sub-hd">Trade Log</h3>
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>Date</th><th>Action</th><th>Ticker</th>
+            <th>Shares</th><th>Price</th><th>Total</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="t in trades" :key="t.id">
+            <tr>
+              <td x-text="t.date"></td>
+              <td><span :class="t.action === 'BUY' ? 'buy' : 'sell'" x-text="t.action"></span></td>
+              <td class="tc" x-text="t.ticker"></td>
+              <td x-text="t.shares.toFixed(4)"></td>
+              <td x-text="'$' + fmt(t.price)"></td>
+              <td x-text="'$' + fmt(t.total)"></td>
+              <td class="rc" x-text="t.reason"></td>
+            </tr>
+          </template>
+          <template x-if="trades.length === 0">
+            <tr><td colspan="7" class="loading">Loading trades…</td></tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <footer>Simulated paper trading — not real money. Not financial advice.</footer>
+
+  <script>
+  // Stored outside Alpine so the Chart.js instance is never wrapped in a Proxy
+  let _chart = null;
+
+  function portfolio() {
+    return {
+      state: null,
+      positions: [],
+      trades: [],
+      navHistory: [],
+      spxHistory: [],
+      view: 'month',
+
+      async init() {
+        const [p, h] = await Promise.all([
+          fetch('/api/portfolio').then(r => r.json()),
+          fetch('/api/portfolio/history').then(r => r.json()),
+        ]);
+        this.state = p.state;
+        this.positions = p.positions;
+        this.trades = p.trades;
+        this.navHistory = h.nav;
+        this.spxHistory = h.spx;
+        this.$nextTick(() => this.renderChart());
+      },
+
+      setView(v) {
+        this.view = v;
+        this.updateChart();
+      },
+
+      normalizeSPX(spxMap, labels) {
+        if (!this.spxHistory.length) return labels.map(() => null);
+        const firstClose = this.spxHistory[0].close_price;
+        let lastKnown = null;
+        return labels.map(date => {
+          const close = spxMap[date];
+          if (close != null) lastKnown = close;
+          return lastKnown != null ? 10000 * (lastKnown / firstClose) : null;
+        });
+      },
+
+      aggregateHistory() {
+        const h = this.navHistory;
+        if (!h.length) return { labels: [], navs: [], spxNorm: [] };
+
+        const spxMap = {};
+        for (const r of this.spxHistory) spxMap[r.snapshot_date] = r.close_price;
+
+        if (this.view === 'week') {
+          const slice = h.slice(-7);
+          const labels = slice.map(r => r.snapshot_date);
+          return { labels, navs: slice.map(r => r.nav), spxNorm: this.normalizeSPX(spxMap, labels) };
+        }
+
+        if (this.view === 'month') {
+          const slice = h.slice(-30);
+          const weeks = {}, spxWeeks = {};
+          for (const row of slice) {
+            const d = new Date(row.snapshot_date);
+            const monday = new Date(d);
+            monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+            const key = monday.toISOString().slice(0, 10);
+            (weeks[key] = weeks[key] || []).push(row.nav);
+            if (spxMap[row.snapshot_date] != null)
+              (spxWeeks[key] = spxWeeks[key] || []).push(spxMap[row.snapshot_date]);
+          }
+          const labels = Object.keys(weeks).sort();
+          const firstClose = this.spxHistory[0]?.close_price;
+          return {
+            labels,
+            navs: labels.map(k => avg(weeks[k])),
+            spxNorm: labels.map(k =>
+              spxWeeks[k] && firstClose ? 10000 * (avg(spxWeeks[k]) / firstClose) : null
+            ),
+          };
+        }
+
+        // year
+        const slice = h.slice(-365);
+        const months = {}, spxMonths = {};
+        for (const row of slice) {
+          const key = row.snapshot_date.slice(0, 7);
+          (months[key] = months[key] || []).push(row.nav);
+          if (spxMap[row.snapshot_date] != null)
+            (spxMonths[key] = spxMonths[key] || []).push(spxMap[row.snapshot_date]);
+        }
+        const labels = Object.keys(months).sort();
+        const firstClose = this.spxHistory[0]?.close_price;
+        return {
+          labels,
+          navs: labels.map(k => avg(months[k])),
+          spxNorm: labels.map(k =>
+            spxMonths[k] && firstClose ? 10000 * (avg(spxMonths[k]) / firstClose) : null
+          ),
+        };
+      },
+
+      renderChart() {
+        const { labels, navs, spxNorm } = this.aggregateHistory();
+        const ctx = document.getElementById('navChart').getContext('2d');
+        _chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Portfolio',
+                data: navs,
+                borderColor: '#22c55e',
+                backgroundColor: 'rgba(34,197,94,0.08)',
+                borderWidth: 2.5,
+                pointRadius: navs.length <= 12 ? 3 : 0,
+                pointHoverRadius: 4,
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: 'S&P 500 (normalized)',
+                data: spxNorm,
+                borderColor: '#60a5fa',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                fill: false,
+                tension: 0.3,
+                spanGaps: false,
+              },
+              {
+                label: 'Baseline $10k',
+                data: Array(labels.length).fill(10000),
+                borderColor: '#334155',
+                borderWidth: 1,
+                borderDash: [4, 4],
+                pointRadius: 0,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 250 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                display: true,
+                labels: {
+                  color: '#94a3b8', font: { size: 12 }, boxWidth: 20, padding: 16,
+                  filter: item => item.text !== 'Baseline $10k',
+                },
+              },
+              tooltip: {
+                backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
+                titleColor: '#94a3b8', bodyColor: '#f1f5f9',
+                callbacks: {
+                  label: ctx => {
+                    if (ctx.parsed.y == null) return null;
+                    return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: '#1e293b' },
+                ticks: { color: '#64748b', font: { size: 11 }, maxTicksLimit: 8 },
+              },
+              y: {
+                grid: { color: '#1e293b' },
+                ticks: { color: '#64748b', font: { size: 11 }, callback: v => '$' + v.toLocaleString() },
+              },
+            },
+          },
+        });
+      },
+
+      updateChart() {
+        if (!_chart) return;
+        const { labels, navs, spxNorm } = this.aggregateHistory();
+        _chart.data.labels = labels;
+        _chart.data.datasets[0].data = navs;
+        _chart.data.datasets[0].pointRadius = navs.length <= 12 ? 3 : 0;
+        _chart.data.datasets[1].data = spxNorm;
+        _chart.data.datasets[2].data = Array(labels.length).fill(10000);
+        _chart.update();
+      },
+
+      fmt(n) {
+        return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      },
+      pnlPct(p) {
+        return ((p.shares * p.current_price - p.cost_basis) / p.cost_basis * 100);
+      },
+      pnlClass(p) {
+        return this.pnlPct(p) >= 0 ? 'pos' : 'neg';
+      },
+      pnlStr(p) {
+        const pct = this.pnlPct(p);
+        return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+      },
+    };
+  }
+
+  function avg(arr) {
+    return arr.reduce((s, v) => s + v, 0) / arr.length;
+  }
+  </script>
+</body>
+</html>

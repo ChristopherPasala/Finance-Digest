@@ -1,0 +1,19 @@
+{
+  "name": "site-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node src/build.js",
+    "start": "node src/server.js",
+    "dev": "node src/build.js && node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1"
+  }
+}

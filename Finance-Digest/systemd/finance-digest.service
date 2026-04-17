@@ -1,0 +1,31 @@
+[Unit]
+Description=Finance Digest Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=christopherpas
+WorkingDirectory=/srv/network-drive/projects/OpenClaw-Finance-Digest
+
+# Use the virtualenv Python
+ExecStart=/srv/network-drive/projects/OpenClaw-Finance-Digest/.venv/bin/python run.py
+
+# Load environment from .env file
+EnvironmentFile=/srv/network-drive/projects/OpenClaw-Finance-Digest/.env
+
+# Restart on failure with a 30-second delay
+Restart=on-failure
+RestartSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=finance-digest
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

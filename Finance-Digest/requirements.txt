@@ -1,0 +1,13 @@
+discord.py>=2.3.2
+openai>=1.30.0
+yfinance>=0.2.40
+alpha-vantage>=3.0.0
+finnhub-python>=2.4.20
+apscheduler>=3.10.4
+requests>=2.31.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+pandas>=2.2.0
+fpdf2>=2.7.9
+matplotlib>=3.9.0
+finvizfinance>=0.14.0

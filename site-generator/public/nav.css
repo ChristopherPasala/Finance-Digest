@@ -1,0 +1,55 @@
+/* Shared styles — referenced by both EJS and Python-generated pages */
+
+/* Glossary hyperlinks */
+.glossary-link { color: #c084fc; border-bottom: 1px dashed #7c3aed; text-decoration: none; }
+.glossary-link:hover { color: #e879f9; border-bottom-color: #e879f9; }
+
+
+.top-nav {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.top-nav .brand {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #f1f5f9;
+  text-decoration: none;
+  margin-right: auto;
+}
+.top-nav a.tab {
+  font-size: 0.875rem;
+  text-decoration: none;
+  color: #94a3b8;
+  padding: 0 4px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.top-nav a.tab:hover { color: #f1f5f9; }
+.top-nav a.tab.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .top-nav { gap: 16px; padding: 0 12px; overflow-x: auto; }
+  .top-nav a.tab {
+    border-bottom: none;
+    border-top: 2px solid transparent;
+    padding: 0 8px;
+  }
+  .top-nav a.tab.active {
+    border-top-color: #60a5fa;
+    background: rgba(96, 165, 250, 0.1);
+  }
+}

@@ -1,0 +1,12 @@
+<h1>Financial Glossary</h1>
+<p style="color:#666; margin-bottom: 2rem;">Plain-English definitions for the financial terms used throughout this site.</p>
+
+<dl class="glossary-list">
+  <% terms.forEach(item => { %>
+    <% const anchor = item.term.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); %>
+    <div class="glossary-entry" id="<%= anchor %>">
+      <dt class="glossary-term"><%= item.term %></dt>
+      <dd class="glossary-def"><%= item.definition %></dd>
+    </div>
+  <% }) %>
+</dl>

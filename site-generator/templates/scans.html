@@ -1,0 +1,64 @@
+<% if (!latestScan) { %>
+  <h1>Market Scans</h1>
+  <p style="color:#64748b;">No scans yet. Run <strong>/scan</strong> in Discord to generate one.</p>
+<% } else { %>
+  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+    <h1 style="margin:0;"><%= latestScan.title %></h1>
+    <% if (historicalScans.length > 0) { %>
+      <button id="history-toggle" onclick="toggleHistory()"
+        style="background:none; border:1px solid #334155; color:#94a3b8; font-size:0.8rem;
+               padding:0.3rem 0.75rem; border-radius:6px; cursor:pointer; white-space:nowrap;">
+        Previous scans ▾
+      </button>
+    <% } %>
+  </div>
+
+  <% if (historicalScans.length > 0) { %>
+  <div id="history-panel" style="display:none; background:#1e293b; border:1px solid #334155;
+       border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem;">
+    <p style="margin:0 0 0.75rem; font-size:0.75rem; text-transform:uppercase;
+              letter-spacing:0.06em; color:#64748b;">Previous Scans</p>
+    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+      <% historicalScans.forEach(scan => { %>
+        <li>
+          <a href="/posts/<%= scan.slug %>.html"
+             style="font-size:0.95rem; font-weight:600; color:#60a5fa; text-decoration:none;">
+            <%= scan.title %>
+          </a>
+          <span style="display:inline-block; margin-left:0.75rem; color:#475569; font-size:0.78rem;">
+            <%= scan.updated_at.split('T')[0] || scan.updated_at %>
+          </span>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
+
+  <div id="scan-content">
+    <div style="color:#475569; font-size:0.875rem; padding:2rem 0; text-align:center;">Loading scan…</div>
+  </div>
+
+  <script>
+    function toggleHistory() {
+      const panel = document.getElementById('history-panel');
+      const btn = document.getElementById('history-toggle');
+      const open = panel.style.display !== 'none';
+      panel.style.display = open ? 'none' : 'block';
+      btn.textContent = open ? 'Previous scans ▾' : 'Previous scans ▴';
+    }
+
+    fetch('/posts/<%= latestScan.slug %>.html')
+      .then(r => r.text())
+      .then(html => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const main = doc.querySelector('main');
+        if (main) {
+          document.getElementById('scan-content').innerHTML = main.innerHTML;
+        }
+      })
+      .catch(() => {
+        document.getElementById('scan-content').innerHTML =
+          '<p style="color:#ef4444;">Could not load scan content.</p>';
+      });
+  </script>
+<% } %>

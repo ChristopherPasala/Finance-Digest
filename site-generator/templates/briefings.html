@@ -1,0 +1,32 @@
+<h1>Briefings</h1>
+
+<% if (todayScores && todayScores.length > 0) { %>
+  <h2 class="section-header">Today's Watchlist — Ranked by Opportunity</h2>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:0.5rem; margin-bottom:2rem;">
+    <% todayScores.forEach((s, i) => {
+      const color = s.score >= 9 ? '#22c55e' : s.score >= 6 ? '#f59e0b' : s.score >= 3 ? '#3b82f6' : '#475569';
+    %>
+      <div style="background:#1e293b; border-radius:0.4rem; border-left:3px solid <%= color %>; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:0.68rem; color:#475569; min-width:1.1rem;"><%= i+1 %>.</span>
+        <span style="font-weight:700; color:#f1f5f9; font-size:0.9rem; letter-spacing:0.03em;"><%= s.ticker %></span>
+        <span style="margin-left:auto; font-size:0.75rem; color:<%= color %>; font-weight:600;"><%= s.score %>/13</span>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<h2 class="section-header">All Briefings</h2>
+<% if (briefings.length === 0) { %>
+  <p style="color:#64748b;">No briefings yet. They are posted automatically each morning.</p>
+<% } else { %>
+  <ul style="list-style:none; padding:0; margin:0;">
+    <% briefings.forEach(b => { %>
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/<%= b.slug %>.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          <%= b.title %>
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;"><%= b.updated_at.split('T')[0] || b.updated_at %></span>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>

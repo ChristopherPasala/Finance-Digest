@@ -1,0 +1,29 @@
+# Python
+Finance-Digest/.venv/
+Finance-Digest/__pycache__/
+Finance-Digest/**/__pycache__/
+Finance-Digest/*.pyc
+Finance-Digest/logs/
+Finance-Digest/*.log
+
+# Secrets & local config
+Finance-Digest/.env
+.env
+
+# Databases
+Finance-Digest/finance_digest.db
+Finance-Digest/finance_digest.db-wal
+Finance-Digest/finance_digest.db-shm
+site-generator/data.db
+data.db
+
+# Node
+site-generator/node_modules/
+site-generator/package-lock.json
+
+# Generated static files (built by Finance-Digest at runtime)
+site-generator/public/posts/
+site-generator/public/briefing-*.html
+
+# Claude personal settings
+.claude/

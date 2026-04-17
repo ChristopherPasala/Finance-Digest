@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Briefings</title>
+  <link rel="stylesheet" href="/nav.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; color: #e2e8f0; line-height: 1.65; background: #0f172a; }
+
+    /* Page content */
+    .page { max-width: 860px; margin: 36px auto; padding: 0 20px; }
+    .back-link { margin-bottom: 24px; }
+    .back-link a { text-decoration: none; color: #64748b; font-size: 0.875rem; }
+    .back-link a:hover { color: #e2e8f0; }
+    footer { margin-top: 60px; padding: 20px 0; border-top: 1px solid #1e293b; font-size: 0.8rem; color: #475569; }
+
+    /* Markdown content */
+    .section { background: #1e293b; border-radius: 0.5rem; padding: 1.25rem 1.5rem; margin-bottom: 1rem; font-size: 0.92rem; }
+    .section p { margin: 0.5rem 0 0.75rem; color: #cbd5e1; line-height: 1.7; }
+    .section ul, .section ol { padding-left: 1.4rem; margin: 0.5rem 0 0.75rem; }
+    .section li { margin-bottom: 0.4rem; color: #cbd5e1; line-height: 1.65; }
+    .section strong { color: #f1f5f9; }
+    .section hr { border: none; border-top: 1px solid #334155; margin: 1.5rem 0; }
+    .section code { background: #0f172a; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.85em; color: #93c5fd; }
+
+    /* h2 = major section title */
+    .section h2 {
+      font-size: 1.35rem; font-weight: 700; color: #60a5fa;
+      margin: 2.5rem 0 1rem; padding: 0 0 0 0.75rem;
+      border-left: 3px solid #3b82f6; line-height: 1.3;
+    }
+    .section h2:first-child { margin-top: 0; }
+
+    /* h3 = subsection header */
+    .section h3 {
+      font-size: 0.85rem; font-weight: 700; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin: 1.75rem 0 0.5rem;
+    }
+
+    /* h4 = item-level header */
+    .section h4 { font-size: 1rem; font-weight: 600; color: #cbd5e1; margin: 1.2rem 0 0.3rem; }
+
+    /* Section separator headers (━━━ style) */
+    h2.section-header {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #60a5fa;
+      border-bottom: 1px solid #1e3a5f; padding-bottom: 0.4rem; margin: 2rem 0 1rem;
+    }
+
+    /* Fact / Interpretation inline labels */
+    .lbl-fact   { display: inline-block; background: #1e3a5f; color: #93c5fd; font-size: 0.72rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 0.25rem; }
+    .lbl-interp { display: inline-block; background: #1a3a2a; color: #4ade80; font-size: 0.72rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 0.25rem; }
+
+    /* Numbered item headers */
+    .item-num   { font-weight: 800; color: #60a5fa; margin-right: 0.25rem; }
+    .item-title { font-weight: 700; color: #f1f5f9; }
+
+    /* SWOT blocks */
+    .swot-block { border-radius: 0.35rem; padding: 0.75rem 1rem; margin: 0.5rem 0; }
+    .swot-cat { display: block; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.45rem; }
+    .swot-s { background: #052e16; color: #bbf7d0; } .swot-s .swot-cat { color: #4ade80; }
+    .swot-w { background: #450a0a; color: #fecaca; } .swot-w .swot-cat { color: #f87171; }
+    .swot-o { background: #0c1a3a; color: #bfdbfe; } .swot-o .swot-cat { color: #60a5fa; }
+    .swot-t { background: #2d1b00; color: #fde68a; } .swot-t .swot-cat { color: #fbbf24; }
+    .swot-block ul { list-style: none; padding: 0; margin: 0.4rem 0 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .swot-block li { font-size: 0.88rem; margin: 0.2rem 0; padding: 0; border: none; background: none; }
+
+    /* Verdict/conclusion callout blocks */
+    p.callout { background: #1e293b; border-left: 3px solid #f59e0b; padding: 0.6rem 1rem; border-radius: 0 0.35rem 0.35rem 0; color: #fde68a; margin: 0.75rem 0; }
+
+
+    /* Glossary page */
+    .glossary-list { margin: 0; padding: 0; }
+    .glossary-entry { padding: 1rem 0; border-bottom: 1px solid #1e293b; }
+    .glossary-entry:last-child { border-bottom: none; }
+    .glossary-term { font-weight: 700; font-size: 1rem; color: #f1f5f9; display: block; margin-bottom: 0.25rem; }
+    .glossary-def { margin: 0; color: #94a3b8; font-size: 0.92rem; line-height: 1.6; }
+    .glossary-entry:target {
+      border-left: 3px solid #60a5fa; padding-left: calc(1rem - 3px);
+      border-radius: 0 6px 6px 0;
+      animation: gloss-flash 1.6s ease-out forwards;
+    }
+    .glossary-entry:target .glossary-term { color: #60a5fa; }
+    @keyframes gloss-flash {
+      0%   { background: #1e3a5f; }
+      100% { background: #0c1a3a; }
+    }
+
+    /* Scan / opportunity cards */
+    .scan-meta { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; }
+    .scan-stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    .scan-stat-value { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; }
+    .card { background: #1e293b; border: 1px solid #334155; border-left-width: 4px; border-radius: 8px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+    .card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+    .card-rank { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; color: #0f172a; }
+    .card-ticker { font-size: 1.1rem; font-weight: 800; color: #f1f5f9; }
+    .card-name { font-size: 0.88rem; color: #94a3b8; flex: 1; }
+    .card-score { font-size: 0.95rem; font-weight: 700; margin-left: auto; }
+    .score-bar-bg { height: 5px; background: #334155; border-radius: 999px; margin-bottom: 0.65rem; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 999px; }
+    .signals { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
+    .pill { font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 999px; color: #e2e8f0; white-space: nowrap; }
+    .llm-eval { margin: 0; font-size: 0.86rem; color: #94a3b8; line-height: 1.55; padding-top: 0.5rem; border-top: 1px solid #334155; }
+    .llm-eval p, .llm-eval li { font-size: 0.86rem; color: #94a3b8; line-height: 1.55; margin: 0.3rem 0; }
+    .llm-eval strong { color: #cbd5e1; }
+    .llm-eval ul, .llm-eval ol { padding-left: 1.2rem; margin: 0.3rem 0; }
+    .llm-eval-muted { color: #475569; font-style: italic; }
+
+    /* Page headings (index, glossary, etc.) */
+    h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; margin: 0 0 1.5rem; }
+    a { color: #60a5fa; }
+    a:hover { color: #93c5fd; }
+  </style>
+</head>
+<body>
+  <nav class="top-nav">
+    <a class="brand" href="/">Finance Digest</a>
+    <a class="tab " href="/">Analyses</a>
+    <a class="tab " href="/scans.html">Market Scans</a>
+    <a class="tab active" href="/briefings.html">Briefings</a>
+    <a class="tab " href="/portfolio.html">Portfolio</a>
+    <a class="tab " href="/glossary.html">Glossary</a>
+  </nav>
+  <div class="page">
+    
+    <main>
+      <h1>Briefings</h1>
+
+
+
+<h2 class="section-header">All Briefings</h2>
+
+  <ul style="list-style:none; padding:0; margin:0;">
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-17.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 17, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-17 11:05:35</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-16.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 16, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-16 11:05:22</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-15.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 15, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-15 11:05:49</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-14.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 14, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-14 11:05:10</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-13.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 13, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-13 11:06:03</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-12.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 12, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-12 11:05:19</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-11.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 11, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-11 11:05:13</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-10.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 10, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-10 11:04:34</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-09.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 09, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-09 11:05:13</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-08.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 08, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-08 11:04:40</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-07.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 07, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-07 11:05:01</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/portfolio-2026-04-06.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Portfolio Deep Dive — April 06, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-06 23:11:38</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-06.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 06, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-06 11:04:22</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-05.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 05, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-05 11:04:00</span>
+      </li>
+    
+      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
+        <a href="/posts/daily-2026-04-04.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
+          Daily Briefing — April 04, 2026
+        </a>
+        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;">2026-04-04 22:17:28</span>
+      </li>
+    
+  </ul>
+
+
+    </main>
+    <footer>Generated on Fri, 17 Apr 2026 11:05:35 GMT</footer>
+  </div>
+  <script>
+    function centerHash() {
+      const id = window.location.hash.slice(1);
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    window.addEventListener('DOMContentLoaded', () =>
+      requestAnimationFrame(() => requestAnimationFrame(centerHash))
+    );
+    window.addEventListener('hashchange', centerHash);
+  </script>
+</body>
+</html>

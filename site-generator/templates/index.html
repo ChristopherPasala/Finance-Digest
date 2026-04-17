@@ -1,0 +1,15 @@
+<h1>Company Analyses</h1>
+<% if (posts.length === 0) { %>
+  <p>No analyses yet.</p>
+<% } else { %>
+  <ul style="list-style:none; padding:0;">
+    <% posts.forEach(post => { %>
+      <li style="margin-bottom: 16px;">
+        <a href="/posts/<%= post.slug %>.html" style="font-size:1.1rem; font-weight:600; text-decoration:none; color:#0057b7;">
+          <%= post.title %>
+        </a>
+        <span style="display:block; color:#888; font-size:0.8rem;">Updated: <%= post.updated_at %></span>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
