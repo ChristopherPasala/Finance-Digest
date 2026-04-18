@@ -164,9 +164,12 @@ function extractTodayScores() {
 }
 
 function buildBriefingsIndex(posts) {
-  const briefings = posts.filter(p => isBriefing(p.slug));
+  const briefings = posts.filter(p => isBriefing(p.slug))
+    .sort((a, b) => b.slug.localeCompare(a.slug));
+  const latestBriefing = briefings[0] || null;
+  const historicalBriefings = briefings.slice(1);
   const todayScores = extractTodayScores();
-  const bodyHtml = ejs.render(readTemplate('briefings.html'), { briefings, todayScores });
+  const bodyHtml = ejs.render(readTemplate('briefings.html'), { latestBriefing, historicalBriefings, todayScores });
   const html = renderLayout('Briefings', bodyHtml, { activeTab: 'briefings' });
   fs.writeFileSync(path.join(PUBLIC, 'briefings.html'), html);
   console.log('  Built: briefings.html');

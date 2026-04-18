@@ -6,18 +6,58 @@
   <title>Paper Portfolio</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg:             #F5F0E8;
+      --card-bg:        rgba(255, 250, 240, 0.88);
+      --card-border:    rgba(139, 69, 19, 0.22);
+      --text-primary:   #1A1208;
+      --text-secondary: #5C4A3A;
+      --text-muted:     #8A7060;
+      --accent:         #8B4513;
+      --accent-deep:    #6B2D2D;
+      --gold:           #C4A35A;
+      --border:         rgba(139, 69, 19, 0.18);
+      --border-strong:  rgba(139, 69, 19, 0.38);
+      --green:          #2D6A4F;
+      --red:            #9B2226;
+      --font-heading:   'Playfair Display', Georgia, serif;
+      --font-body:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f172a; color: #e2e8f0; min-height: 100vh; line-height: 1.6;
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(180,140,100,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(160,120,80,0.12) 0%, transparent 40%),
+        radial-gradient(ellipse at 60% 80%, rgba(200,160,120,0.10) 0%, transparent 35%),
+        linear-gradient(135deg, #F5F0E8 0%, #EDE5D8 40%, #F2EBE0 70%, #F5F0E8 100%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
     }
     header {
-      background: #1e293b; border-bottom: 1px solid #334155; padding: 1.5rem 2rem;
+      background: rgba(255, 248, 238, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
     }
-    header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
-    .subtitle { margin: 0; font-size: 0.85rem; color: #64748b; }
+    header h1 {
+      margin: 0 0 0.25rem;
+      font-family: var(--font-heading);
+      font-size: 1.6rem; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .subtitle { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
     main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
 
     /* Summary grid */
@@ -28,87 +68,109 @@
       margin-bottom: 1.25rem;
     }
     .stat-card {
-      background: #1e293b; border-radius: 0.5rem; padding: 1rem 1.25rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
       display: flex; flex-direction: column; gap: 0.2rem;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 12px rgba(139,69,19,0.06);
     }
     .stat-label {
-      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b;
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);
     }
-    .stat-value { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; }
-    .stat-value.pos { color: #22c55e; }
-    .stat-value.neg { color: #ef4444; }
+    .stat-value { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+    .stat-value.pos { color: var(--green); }
+    .stat-value.neg { color: var(--red); }
 
     /* Chart */
     .chart-card {
-      background: #1e293b; border-radius: 0.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
       padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 20px rgba(139,69,19,0.06);
     }
     .chart-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 1rem;
     }
-    .chart-title { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .chart-title { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
     .view-btns { display: flex; gap: 0.35rem; }
     .view-btn {
-      background: #0f172a; border: 1px solid #334155; color: #94a3b8;
+      background: rgba(255,248,238,0.7);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
       padding: 0.25rem 0.75rem; border-radius: 0.35rem;
       font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
     }
-    .view-btn:hover { border-color: #60a5fa; color: #60a5fa; }
-    .view-btn.active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+    .view-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .chart-canvas-wrap { position: relative; height: 220px; }
 
     /* Section headings */
     .sub-hd {
-      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.07em; color: #60a5fa; margin: 1.75rem 0 0.6rem;
+      font-family: var(--font-heading);
+      font-size: 1rem; font-weight: 700;
+      color: var(--accent); margin: 1.75rem 0 0.6rem;
+      letter-spacing: 0.02em;
     }
 
-    /* Holdings grid */
-    .holdings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
+    .ticker-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 0.5rem; flex-shrink: 0;
     }
-    .holding-card {
-      background: #1e293b; border-radius: 0.5rem; padding: 1rem 1.25rem;
-      border-left: 3px solid #334155;
-    }
-    .holding-card.pos { border-left-color: #22c55e; }
-    .holding-card.neg { border-left-color: #ef4444; }
-    .holding-card.cash-card { border-left-color: #64748b; }
-    .h-ticker { font-size: 1rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.04em; }
-    .h-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.35rem; }
-    .h-key { font-size: 0.72rem; color: #64748b; }
-    .h-val { font-size: 0.82rem; color: #cbd5e1; font-weight: 500; }
-    .h-pnl { font-size: 0.9rem; font-weight: 700; }
-    .h-pnl.pos { color: #22c55e; }
-    .h-pnl.neg { color: #ef4444; }
+    .ticker-dot.pos  { background: var(--green); }
+    .ticker-dot.neg  { background: var(--red); }
+    .ticker-dot.cash { background: var(--text-muted); }
 
     /* Trade log table */
     .tbl-wrap { overflow-x: auto; margin-bottom: 1rem; }
     .dt {
       width: 100%; border-collapse: collapse; font-size: 0.875rem;
-      background: #1e293b; border-radius: 0.5rem; overflow: hidden;
+      background: var(--card-bg); border-radius: 0.5rem; overflow: hidden;
     }
-    .dt thead { background: #0f172a; }
+    .dt thead { background: rgba(245, 240, 232, 0.95); }
     .dt th {
       text-align: left; padding: 0.6rem 0.85rem; font-size: 0.72rem;
-      text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);
+      white-space: nowrap; border-bottom: 1px solid var(--border);
     }
-    .dt td { padding: 0.55rem 0.85rem; border-top: 1px solid #334155; vertical-align: middle; }
-    .dt tbody tr:hover { background: #263244; }
-    .tc { font-weight: 700; color: #f1f5f9; letter-spacing: 0.03em; }
-    .rc { color: #94a3b8; font-size: 0.8rem; max-width: 260px; }
-    .buy  { color: #22c55e; font-weight: 700; }
-    .sell { color: #ef4444; font-weight: 700; }
+    .dt th.sortable { cursor: pointer; user-select: none; }
+    .dt th.sortable:hover { color: var(--text-secondary); }
+    .dt th.sort-active { color: var(--accent); }
+    .sort-arrow { margin-left: 0.3rem; font-size: 0.65rem; }
+    .dt td { padding: 0.55rem 0.85rem; border-top: 1px solid var(--border); vertical-align: middle; color: var(--text-secondary); }
+    .dt tbody tr:hover { background: rgba(196,163,90,0.07); }
+    .tc { font-weight: 700; color: var(--text-primary); letter-spacing: 0.03em; }
+    .rc { color: var(--text-muted); font-size: 0.8rem; max-width: 260px; }
+    .buy  { color: var(--green); font-weight: 700; }
+    .sell { color: var(--red); font-weight: 700; }
 
-    .loading { color: #475569; font-size: 0.85rem; padding: 1rem 0; }
+    .loading { color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0; }
+
+    /* Scoring table */
+    .score-trend.up   { color: var(--green); font-weight: 600; }
+    .score-trend.down { color: var(--red); font-weight: 600; }
+    .score-trend.flat { color: var(--text-muted); }
+    .score-bar-wrap { background: var(--border); border-radius: 0.25rem; height: 4px; width: 80px; overflow: hidden; }
+    .score-bar { height: 4px; border-radius: 0.25rem; }
+    .score-high { color: var(--green); }
+    .score-mid  { color: var(--gold); }
+    .score-low  { color: var(--red); }
+    .score-badge-held {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      background: rgba(139,69,19,0.12); color: var(--accent);
+      border-radius: 0.25rem; padding: 0.1rem 0.4rem;
+      margin-left: 0.4rem;
+    }
 
     footer {
       text-align: center; padding: 2rem 1.5rem; font-size: 0.78rem;
-      color: #475569; border-top: 1px solid #1e293b; margin-top: 2rem;
+      color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 2rem;
     }
     @media (max-width: 600px) {
       header { padding: 1rem; }
@@ -125,6 +187,7 @@
     <a class="tab" href="/briefings.html">Briefings</a>
     <a class="tab active" href="/portfolio.html">Portfolio</a>
     <a class="tab" href="/glossary.html">Glossary</a>
+    <a class="nav-cta" href="/">Start Reading</a>
   </nav>
 
   <header>
@@ -178,43 +241,50 @@
       </div>
     </div>
 
-    <!-- Holdings grid -->
+    <!-- Holdings table -->
     <h3 class="sub-hd">Holdings</h3>
-    <div class="holdings-grid">
-      <template x-for="p in positions" :key="p.ticker">
-        <div class="holding-card" :class="pnlClass(p)">
-          <div class="h-ticker" x-text="p.ticker"></div>
-          <div class="h-row">
-            <span class="h-key">Shares</span>
-            <span class="h-val" x-text="p.shares.toFixed(4)"></span>
-          </div>
-          <div class="h-row">
-            <span class="h-key">Price</span>
-            <span class="h-val" x-text="'$' + fmt(p.current_price)"></span>
-          </div>
-          <div class="h-row">
-            <span class="h-key">Value</span>
-            <span class="h-val" x-text="'$' + fmt(p.shares * p.current_price)"></span>
-          </div>
-          <div class="h-row">
-            <span class="h-key">P&amp;L</span>
-            <span class="h-pnl" :class="pnlClass(p)" x-text="pnlStr(p)"></span>
-          </div>
-        </div>
-      </template>
-      <template x-if="state">
-        <div class="holding-card cash-card">
-          <div class="h-ticker">CASH</div>
-          <div class="h-row">
-            <span class="h-key">Value</span>
-            <span class="h-val" x-text="'$' + fmt(state.cash)"></span>
-          </div>
-          <div class="h-row">
-            <span class="h-key">Weight</span>
-            <span class="h-val" x-text="state ? (state.cash / state.nav * 100).toFixed(1) + '%' : '—'"></span>
-          </div>
-        </div>
-      </template>
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th class="sortable" :class="holdSort.col==='ticker' && 'sort-active'" @click="sortHoldings('ticker')">Ticker<span class="sort-arrow" x-text="holdSort.col==='ticker' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+            <th class="sortable" :class="holdSort.col==='shares' && 'sort-active'" @click="sortHoldings('shares')">Shares<span class="sort-arrow" x-text="holdSort.col==='shares' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+            <th class="sortable" :class="holdSort.col==='price' && 'sort-active'" @click="sortHoldings('price')">Price<span class="sort-arrow" x-text="holdSort.col==='price' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+            <th class="sortable" :class="holdSort.col==='value' && 'sort-active'" @click="sortHoldings('value')">Value<span class="sort-arrow" x-text="holdSort.col==='value' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+            <th class="sortable" :class="holdSort.col==='weight' && 'sort-active'" @click="sortHoldings('weight')">Weight<span class="sort-arrow" x-text="holdSort.col==='weight' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+            <th class="sortable" :class="holdSort.col==='pnl' && 'sort-active'" @click="sortHoldings('pnl')">P&amp;L<span class="sort-arrow" x-text="holdSort.col==='pnl' ? (holdSort.asc ? '▲' : '▼') : ''"></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="p in sortedPositions()" :key="p.ticker">
+            <tr>
+              <td>
+                <span class="ticker-dot" :class="pnlClass(p)"></span>
+                <span class="tc" x-text="p.ticker"></span>
+              </td>
+              <td x-text="p.shares.toFixed(4)"></td>
+              <td x-text="'$' + fmt(p.current_price)"></td>
+              <td x-text="'$' + fmt(p.shares * p.current_price)"></td>
+              <td x-text="state ? (p.shares * p.current_price / state.nav * 100).toFixed(1) + '%' : '—'"></td>
+              <td :style="pnlPct(p) >= 0 ? 'color:#2D6A4F' : 'color:#9B2226'"
+                  x-text="pnlStr(p)"></td>
+            </tr>
+          </template>
+          <template x-if="state">
+            <tr class="cash-row">
+              <td>
+                <span class="ticker-dot cash"></span>
+                <span class="tc">CASH</span>
+              </td>
+              <td>—</td>
+              <td>—</td>
+              <td x-text="'$' + fmt(state.cash)"></td>
+              <td x-text="(state.cash / state.nav * 100).toFixed(1) + '%'"></td>
+              <td>—</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
 
     <!-- Trade log -->
@@ -246,6 +316,53 @@
       </table>
     </div>
 
+    <!-- Scoring table -->
+    <h3 class="sub-hd">Watchlist Scores</h3>
+    <template x-if="scores.length === 0">
+      <p class="loading">No score history yet — scores accumulate after the first daily briefing.</p>
+    </template>
+    <div class="tbl-wrap" x-show="scores.length > 0">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ticker</th>
+            <th>Score</th>
+            <th>14d Avg</th>
+            <th>Trend</th>
+            <th>Bar</th>
+            <th>Top Signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="(s, i) in scores" :key="s.ticker">
+            <tr>
+              <td style="color:#8A7060" x-text="i + 1"></td>
+              <td>
+                <span class="tc" x-text="s.ticker"></span>
+                <span class="score-badge-held" x-show="s.held">Held</span>
+              </td>
+              <td :class="scoreColorClass(s.latest_score)" x-text="s.latest_score + '/15'"></td>
+              <td style="color:#8A7060" x-text="s.data_points >= 3 ? s.avg_score + '/15' : '—'"></td>
+              <td>
+                <span class="score-trend"
+                  :class="s.trend > 0 ? 'up' : s.trend < 0 ? 'down' : 'flat'"
+                  x-text="s.trend > 0 ? '↑ +' + s.trend : s.trend < 0 ? '↓ ' + s.trend : '—'">
+                </span>
+              </td>
+              <td>
+                <div class="score-bar-wrap">
+                  <div class="score-bar" :class="scoreColorClass(s.latest_score)"
+                       :style="'width:' + Math.round(s.latest_score / 15 * 100) + '%;background:currentColor'"></div>
+                </div>
+              </td>
+              <td class="rc" x-text="s.signals[0] || '—'"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
   </main>
 
   <footer>Simulated paper trading — not real money. Not financial advice.</footer>
@@ -259,9 +376,11 @@
       state: null,
       positions: [],
       trades: [],
+      scores: [],
       navHistory: [],
       spxHistory: [],
       view: 'month',
+      holdSort: { col: 'value', asc: false },
 
       async init() {
         const [p, h] = await Promise.all([
@@ -271,6 +390,7 @@
         this.state = p.state;
         this.positions = p.positions;
         this.trades = p.trades;
+        this.scores = p.scores || [];
         this.navHistory = h.nav;
         this.spxHistory = h.spx;
         this.$nextTick(() => this.renderChart());
@@ -359,8 +479,8 @@
               {
                 label: 'Portfolio',
                 data: navs,
-                borderColor: '#22c55e',
-                backgroundColor: 'rgba(34,197,94,0.08)',
+                borderColor: '#2D6A4F',
+                backgroundColor: 'rgba(45,106,79,0.08)',
                 borderWidth: 2.5,
                 pointRadius: navs.length <= 12 ? 3 : 0,
                 pointHoverRadius: 4,
@@ -370,7 +490,7 @@
               {
                 label: 'S&P 500 (normalized)',
                 data: spxNorm,
-                borderColor: '#60a5fa',
+                borderColor: '#8B4513',
                 backgroundColor: 'transparent',
                 borderWidth: 2,
                 pointRadius: 0,
@@ -382,7 +502,7 @@
               {
                 label: 'Baseline $10k',
                 data: Array(labels.length).fill(10000),
-                borderColor: '#334155',
+                borderColor: 'rgba(139,69,19,0.2)',
                 borderWidth: 1,
                 borderDash: [4, 4],
                 pointRadius: 0,
@@ -399,13 +519,16 @@
               legend: {
                 display: true,
                 labels: {
-                  color: '#94a3b8', font: { size: 12 }, boxWidth: 20, padding: 16,
+                  color: '#5C4A3A', font: { size: 12 }, boxWidth: 20, padding: 16,
                   filter: item => item.text !== 'Baseline $10k',
                 },
               },
               tooltip: {
-                backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
-                titleColor: '#94a3b8', bodyColor: '#f1f5f9',
+                backgroundColor: 'rgba(255,248,238,0.97)',
+                borderColor: 'rgba(139,69,19,0.3)',
+                borderWidth: 1,
+                titleColor: '#5C4A3A',
+                bodyColor: '#1A1208',
                 callbacks: {
                   label: ctx => {
                     if (ctx.parsed.y == null) return null;
@@ -416,12 +539,12 @@
             },
             scales: {
               x: {
-                grid: { color: '#1e293b' },
-                ticks: { color: '#64748b', font: { size: 11 }, maxTicksLimit: 8 },
+                grid: { color: 'rgba(139,69,19,0.07)' },
+                ticks: { color: '#8A7060', font: { size: 11 }, maxTicksLimit: 8 },
               },
               y: {
-                grid: { color: '#1e293b' },
-                ticks: { color: '#64748b', font: { size: 11 }, callback: v => '$' + v.toLocaleString() },
+                grid: { color: 'rgba(139,69,19,0.07)' },
+                ticks: { color: '#8A7060', font: { size: 11 }, callback: v => '$' + v.toLocaleString() },
               },
             },
           },
@@ -451,6 +574,40 @@
       pnlStr(p) {
         const pct = this.pnlPct(p);
         return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+      },
+
+      sortHoldings(col) {
+        if (this.holdSort.col === col) {
+          this.holdSort.asc = !this.holdSort.asc;
+        } else {
+          this.holdSort.col = col;
+          this.holdSort.asc = col === 'ticker';
+        }
+      },
+
+      sortedPositions() {
+        const { col, asc } = this.holdSort;
+        const nav = this.state?.nav ?? 1;
+        const key = p => {
+          if (col === 'ticker') return p.ticker;
+          if (col === 'shares') return p.shares;
+          if (col === 'price')  return p.current_price;
+          if (col === 'value')  return p.shares * p.current_price;
+          if (col === 'weight') return p.shares * p.current_price / nav;
+          if (col === 'pnl')    return this.pnlPct(p);
+          return 0;
+        };
+        return [...this.positions].sort((a, b) => {
+          const va = key(a), vb = key(b);
+          const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+          return asc ? cmp : -cmp;
+        });
+      },
+
+      scoreColorClass(score) {
+        if (score >= 8) return 'score-high';
+        if (score >= 5) return 'score-mid';
+        return 'score-low';
       },
     };
   }

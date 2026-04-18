@@ -138,10 +138,11 @@ async def run_portfolio_briefing(trigger_type: str = "scheduled") -> None:
         date_str = datetime.utcnow().strftime("%B %d, %Y")
         companies = await database.get_all_companies()
         tickers_covered = [c.ticker for c in companies if c.list_type == "portfolio"]
-        portfolio_count = len(tickers_covered)
+        if not tickers_covered:
+            tickers_covered = [c.ticker for c in companies if c.list_type == "watchlist"]
 
         title = f"Weekly Portfolio Deep Dive — {date_str}"
-        subtitle = f"Portfolio: {portfolio_count} companies"
+        subtitle = f"{len(tickers_covered)} companies"
 
         # Publish the deep-dive as a web article
         today_key = f"portfolio-{datetime.utcnow().strftime('%Y-%m-%d')}"

@@ -50,7 +50,60 @@ app.get('/api/portfolio', (req, res) => {
     return t;
   });
 
-  res.json({ state, positions, trades });
+  // Scoring grid — latest + previous score + 14d rolling avg + price per ticker
+  const scoreRows = FD_DB.prepare(`
+    SELECT
+      ticker,
+      score,
+      price,
+      piotroski_fscore,
+      signals,
+      score_date,
+      ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY score_date DESC) AS rn
+    FROM paper_score_history
+  `).all();
+
+  // Group into latest (rn=1) and previous (rn=2) per ticker
+  const latestMap = {}, prevMap = {};
+  for (const r of scoreRows) {
+    if (r.rn === 1) latestMap[r.ticker] = r;
+    else if (r.rn === 2) prevMap[r.ticker] = r;
+  }
+
+  const rolling = FD_DB.prepare(`
+    SELECT ticker,
+           ROUND(AVG(score), 1) AS avg_score,
+           COUNT(*)             AS data_points
+    FROM paper_score_history
+    WHERE score_date >= date('now', '-14 days')
+    GROUP BY ticker
+  `).all();
+  const rollingMap = {};
+  for (const r of rolling) rollingMap[r.ticker] = r;
+
+  const heldTickers = new Set(positions.map(p => p.ticker));
+
+  const scores = Object.values(latestMap).map(s => {
+    let signals = [];
+    try { signals = JSON.parse(s.signals).slice(0, 3); } catch {}
+    const r = rollingMap[s.ticker] || {};
+    const prev = prevMap[s.ticker];
+    const delta = prev != null ? s.score - prev.score : null;
+    return {
+      ticker: s.ticker,
+      latest_score: s.score,
+      prev_score: prev?.score ?? null,
+      delta,
+      avg_score: r.avg_score ?? s.score,
+      data_points: r.data_points ?? 1,
+      price: s.price ?? null,
+      piotroski_fscore: s.piotroski_fscore,
+      signals,
+      held: heldTickers.has(s.ticker),
+    };
+  }).sort((a, b) => b.avg_score - a.avg_score);
+
+  res.json({ state, positions, trades, scores });
 });
 
 app.get('/api/portfolio/history', (req, res) => {

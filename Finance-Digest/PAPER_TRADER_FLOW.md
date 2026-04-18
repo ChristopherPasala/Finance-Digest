@@ -31,12 +31,14 @@ Called from `run_morning_briefing()` inside the morning briefing scheduler. It r
 |----------|-------|---------|
 | `STARTING_CASH` | $10,000 | Initial portfolio value |
 | `MAX_POSITIONS` | 10 | Hard cap on concurrent holdings |
-| `BUY_SCORE_THRESHOLD` | 8 / 15 | Minimum score to open a position |
-| `SELL_SCORE_THRESHOLD` | 3 / 15 | Score at or below this triggers an exit |
+| `BUY_SCORE_THRESHOLD` | 8 / 15 | Minimum rolling score to open a position (rebalance day only) |
+| `SELL_SCORE_THRESHOLD` | 3 / 15 | Rolling avg score ≤ 3 → full exit on rebalance day |
+| `TRIM_SCORE_THRESHOLD` | 6 / 15 | Rolling avg score 4–6 → trim to 50% on rebalance day |
 | `POSITION_SIZE_PCT` | 10% | Target allocation per new position (% of NAV) |
-| `STOP_LOSS_PCT` | 15% | Auto-exit if down ≥ 15% from avg cost |
+| `STOP_LOSS_PCT` | 15% | Trailing stop: exit if down ≥ 15% from position high-water mark (daily) |
 | `MAX_SINGLE_TICKER_PCT` | 20% | No single ticker can exceed 20% of NAV |
-| `MIN_TRADE_CASH` | $50 | Minimum allocation to bother opening a position |
+| `MIN_TRADE_CASH` | $50 | Minimum allocation to bother opening or trimming a position |
+| `REBALANCE_INTERVAL_DAYS` | 14 (env) | Days between rebalances — set via `REBALANCE_INTERVAL_DAYS` in `.env` |
 
 ### Step-by-Step
 
@@ -220,12 +222,21 @@ opportunity_scanner.score_snapshots(snapshots)
     │
     └─ OpportunityScore(ticker, score, signals, piotroski_fscore, snapshot)
             │
+            ├─ persisted daily to paper_score_history table
+            │
             ▼
     run_paper_trading_session(scores)
             │
-            ├─ score ≥ 8  →  BUY
-            ├─ score ≤ 3  →  SELL
-            └─ otherwise  →  HOLD
+            ├─ STOP-LOSS PASS (every day — trailing stop from position high-water mark)
+            │       └─ drawdown ≥ 15% from high → SELL full position
+            │
+            ├─ REBALANCE GATE: days since last rebalance < REBALANCE_INTERVAL_DAYS?
+            │       └─ yes → skip buy/sell/trim, log "Next rebalance in N days"
+            │
+            └─ REBALANCE DAY (rolling avg score over interval period):
+                    ├─ rolling avg ≤ 3  →  SELL full position
+                    ├─ rolling avg 4–6  →  TRIM to 50%
+                    └─ rolling avg ≥ 8  →  BUY (LLM sizing: FULL/HALF/SKIP)
 ```
 
 ---
@@ -318,8 +329,9 @@ This runs a deeper per-company analysis (`build_portfolio_briefing()`) on every 
 ## Relevant DB Tables
 
 | Table | Purpose |
-|-------|---------|/
- `paper_portfolio_state` | Singleton cash balance and inception date |
-| `paper_trades` | Full BUY/SELL history — current positions derived from this |
+|-------|---------|
+| `paper_portfolio_state` | Singleton cash balance, inception date, and `last_rebalance_at` |
+| `paper_trades` | Full BUY/SELL/TRIM history — current positions derived from this |
 | `paper_daily_value` | Daily NAV snapshots for the performance chart |
-| `paper_daily_positions` | Daily per-ticker weights for the allocation chart |
+| `paper_daily_positions` | Daily per-ticker prices and weights (also source for trailing stop high-water mark) |
+| `paper_score_history` | Daily opportunity scores per ticker — rolling average used on rebalance day |

@@ -58,6 +58,9 @@ class Config:
     # SEC EDGAR
     sec_user_agent: str
 
+    # Paper trading
+    rebalance_interval_days: int = 14  # days between portfolio rebalances (14=bi-weekly, 30=monthly)
+
     # Limits
     max_discord_embeds_per_briefing: int = 20
 
@@ -100,6 +103,7 @@ def load_config() -> Config:
         log_path=_optional("LOG_PATH", "./logs/finance_digest.log"),
         sec_user_agent=_optional("SEC_USER_AGENT", "FinanceDigestBot/1.0 contact@example.com"),
         max_discord_embeds_per_briefing=int(_optional("MAX_DISCORD_EMBEDS_PER_BRIEFING", "20")),
+        rebalance_interval_days=int(_optional("REBALANCE_INTERVAL_DAYS", "14")),
     )
 
     # Warn about optional keys

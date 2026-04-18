@@ -129,7 +129,8 @@ async def scan_market(trigger_type: str = "scheduled") -> list[OpportunityScore]
 
                 score, signals, p_score = _score_snapshot(snap)
                 # Append screener note to signals if it failed, for transparency
-                if not passes and reason:
+                # but skip if the same reason already appears as a regular signal
+                if not passes and reason and not any(reason in s for s in signals):
                     signals = signals + [f"[Screener: {reason}]"]
                 return OpportunityScore(
                     ticker=ticker,

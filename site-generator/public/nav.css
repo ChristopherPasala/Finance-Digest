@@ -1,55 +1,87 @@
 /* Shared styles — referenced by both EJS and Python-generated pages */
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
 /* Glossary hyperlinks */
-.glossary-link { color: #c084fc; border-bottom: 1px dashed #7c3aed; text-decoration: none; }
-.glossary-link:hover { color: #e879f9; border-bottom-color: #e879f9; }
+.glossary-link { color: #8B4513; border-bottom: 1px dashed rgba(139,69,19,0.45); text-decoration: none; }
+.glossary-link:hover { color: #6B2D2D; border-bottom-color: #6B2D2D; }
 
 
 .top-nav {
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: rgba(255, 248, 238, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(196, 163, 90, 0.4);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.7), 0 4px 20px rgba(139,69,19,0.06);
   padding: 0 24px;
   display: flex;
   align-items: center;
-  gap: 32px;
-  height: 52px;
+  gap: 28px;
+  height: 56px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 .top-nav .brand {
+  font-family: 'Playfair Display', Georgia, serif;
   font-weight: 700;
-  font-size: 1rem;
-  color: #f1f5f9;
+  font-size: 1.05rem;
+  color: #1A1208;
   text-decoration: none;
   margin-right: auto;
+  letter-spacing: 0.05em;
 }
 .top-nav a.tab {
-  font-size: 0.875rem;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-decoration: none;
-  color: #94a3b8;
+  color: #5C4A3A;
   padding: 0 4px;
-  height: 52px;
+  height: 56px;
   display: flex;
   align-items: center;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s;
 }
-.top-nav a.tab:hover { color: #f1f5f9; }
+.top-nav a.tab:hover { color: #1A1208; }
 .top-nav a.tab.active {
-  color: #60a5fa;
-  border-bottom-color: #60a5fa;
+  color: #8B4513;
+  border-bottom-color: #C4A35A;
   font-weight: 600;
 }
+.nav-cta {
+  background: #8B4513;
+  color: #fff !important;
+  padding: 0.38rem 1rem;
+  border-radius: 0.45rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+  white-space: nowrap;
+  border-bottom: none !important;
+  height: auto !important;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-cta:hover { background: #6B2D2D !important; color: #fff !important; }
 @media (max-width: 600px) {
-  .top-nav { gap: 16px; padding: 0 12px; overflow-x: auto; }
+  .top-nav { gap: 12px; padding: 0 12px; overflow-x: auto; }
   .top-nav a.tab {
     border-bottom: none;
     border-top: 2px solid transparent;
     padding: 0 8px;
   }
   .top-nav a.tab.active {
-    border-top-color: #60a5fa;
-    background: rgba(96, 165, 250, 0.1);
+    border-top-color: #C4A35A;
+    background: rgba(196, 163, 90, 0.1);
   }
+  .nav-cta { display: none; }
 }

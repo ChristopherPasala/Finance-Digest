@@ -156,6 +156,19 @@ CREATE TABLE IF NOT EXISTS daily_discoveries (
     UNIQUE(date, ticker)
 );
 CREATE INDEX IF NOT EXISTS idx_daily_disc_date ON daily_discoveries(date, score DESC);
+
+CREATE TABLE IF NOT EXISTS paper_score_history (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker           TEXT    NOT NULL COLLATE NOCASE,
+    score_date       TEXT    NOT NULL,
+    score            INTEGER NOT NULL,
+    price            REAL,
+    piotroski_fscore INTEGER,
+    signals          TEXT,
+    recorded_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(ticker, score_date)
+);
+CREATE INDEX IF NOT EXISTS idx_score_history ON paper_score_history(ticker, score_date DESC);
 """
 
 
@@ -519,6 +532,18 @@ async def paper_ensure_initialized() -> None:
                 "INSERT OR IGNORE INTO paper_portfolio_state (id, cash, inception_at) "
                 "VALUES (1, 10000.0, date('now'))"
             )
+            # Migration: add last_rebalance_at if not present
+            try:
+                conn.execute(
+                    "ALTER TABLE paper_portfolio_state ADD COLUMN last_rebalance_at TEXT DEFAULT NULL"
+                )
+            except Exception:
+                pass  # column already exists
+            # Migration: add price to paper_score_history if not present
+            try:
+                conn.execute("ALTER TABLE paper_score_history ADD COLUMN price REAL")
+            except Exception:
+                pass  # column already exists
     await _run(_init)
 
 
@@ -669,4 +694,93 @@ async def paper_get_daily_positions(since_date: str | None = None) -> list[dict]
                     "SELECT * FROM paper_daily_positions ORDER BY snapshot_date ASC, weight_pct DESC"
                 ).fetchall()
             return [dict(r) for r in rows]
+    return await _run(_get)
+
+
+async def paper_get_position_highs() -> dict[str, float]:
+    """Return {ticker: max_price_ever} from paper_daily_positions for all non-cash tickers."""
+    def _get():
+        with _connect() as conn:
+            rows = conn.execute(
+                """SELECT ticker, MAX(price) AS high_price
+                   FROM paper_daily_positions
+                   WHERE ticker != 'CASH'
+                   GROUP BY ticker"""
+            ).fetchall()
+            return {r["ticker"]: r["high_price"] for r in rows}
+    return await _run(_get)
+
+
+async def paper_update_rebalance_date(date_str: str) -> None:
+    """Record the date of the most recent rebalance."""
+    def _upd():
+        with _connect() as conn:
+            conn.execute(
+                "UPDATE paper_portfolio_state SET last_rebalance_at=?, updated_at=datetime('now') WHERE id=1",
+                (date_str,),
+            )
+    await _run(_upd)
+
+
+async def paper_save_scores(date_str: str, scores: list) -> None:
+    """Persist today's opportunity scores for all watchlist tickers to score history."""
+    def _save():
+        with _connect() as conn:
+            conn.executemany(
+                """INSERT OR REPLACE INTO paper_score_history
+                   (ticker, score_date, score, price, piotroski_fscore, signals)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                [
+                    (
+                        s.ticker.upper(),
+                        date_str,
+                        s.score,
+                        float(s.snapshot.quote.get("price")) if s.snapshot and s.snapshot.quote.get("price") else None,
+                        s.piotroski_fscore,
+                        json.dumps(s.signals),
+                    )
+                    for s in scores
+                ],
+            )
+    await _run(_save)
+
+
+async def paper_get_rolling_scores(days: int = 14) -> dict[str, dict]:
+    """
+    Return {ticker: {avg_score, data_points, trend, latest_score}} over the last N days.
+    trend = latest score minus oldest score in the window (positive = improving).
+    """
+    def _get():
+        with _connect() as conn:
+            rows = conn.execute(
+                """SELECT
+                       ticker,
+                       AVG(score)                                     AS avg_score,
+                       COUNT(*)                                       AS data_points,
+                       MAX(CASE WHEN score_date = (
+                               SELECT MAX(score_date) FROM paper_score_history sh2
+                               WHERE sh2.ticker = sh.ticker
+                                 AND sh2.score_date >= date('now', ?)
+                           ) THEN score END)                          AS latest_score,
+                       MIN(CASE WHEN score_date = (
+                               SELECT MIN(score_date) FROM paper_score_history sh3
+                               WHERE sh3.ticker = sh.ticker
+                                 AND sh3.score_date >= date('now', ?)
+                           ) THEN score END)                          AS oldest_score
+                   FROM paper_score_history sh
+                   WHERE score_date >= date('now', ?)
+                   GROUP BY ticker""",
+                (f"-{days} days", f"-{days} days", f"-{days} days"),
+            ).fetchall()
+            result = {}
+            for r in rows:
+                latest = r["latest_score"] or 0
+                oldest = r["oldest_score"] or latest
+                result[r["ticker"]] = {
+                    "avg_score":   r["avg_score"],
+                    "data_points": r["data_points"],
+                    "latest_score": latest,
+                    "trend":       latest - oldest,
+                }
+            return result
     return await _run(_get)

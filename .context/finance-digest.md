@@ -96,10 +96,14 @@ cmd_analyze()
 run_morning_briefing()
   ├─ build_snapshot() for all portfolio + watchlist tickers (concurrent)
   ├─ Score watchlist → OpportunityScore (0–15, incl. Piotroski F-Score)
+  ├─ Score watchlist → paper_score_history (persisted daily for rolling avg)
   ├─ run_paper_trading_session()
-  │   ├─ Stop-loss pass (−15% threshold → SELL)
-  │   ├─ Sell pass (score ≤ 3/15 → SELL)
-  │   └─ Buy pass (score ≥ 8/15 → LLM sizes: FULL/HALF/SKIP → BUY)
+  │   ├─ Trailing stop-loss (−15% from position high → SELL, daily)
+  │   ├─ Rebalance gate (every REBALANCE_INTERVAL_DAYS days, default 14):
+  │   │   ├─ Sell pass (rolling avg score ≤ 3/15 → SELL)
+  │   │   ├─ Trim pass (rolling avg score 4–6/15 → sell 50%)
+  │   │   └─ Buy pass (rolling avg score ≥ 8/15 → LLM sizes: FULL/HALF/SKIP → BUY)
+  │   └─ Daily NAV snapshot always recorded
   ├─ Compose Discord embeds
   ├─ Save briefing HTML → site-generator/public/posts/daily-YYYY-MM-DD.html
   ├─ save_portfolio_page() → NO-OP (portfolio.html is owned by the Node side)

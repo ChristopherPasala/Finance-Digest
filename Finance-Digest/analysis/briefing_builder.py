@@ -92,6 +92,9 @@ async def build_daily_briefing(trigger_type: str = "scheduled") -> list[str]:
     # Score snapshots for paper trader — runs silently, no separate section rendered
     try:
         scores = await score_snapshots(built_snaps) if built_snaps else []
+        if scores:
+            today_key = datetime.utcnow().strftime("%Y-%m-%d")
+            await database.paper_save_scores(today_key, scores)
     except Exception as e:
         log.error("[daily] Opportunity scoring failed: %s", e)
         scores = []
@@ -143,23 +146,25 @@ async def build_portfolio_briefing(trigger_type: str = "scheduled") -> list[str]
     """
     companies = await database.get_all_companies()
     portfolio = [c for c in companies if c.list_type == "portfolio"]
+    if not portfolio:
+        portfolio = [c for c in companies if c.list_type == "watchlist"]
 
     if not portfolio:
-        return ["No portfolio companies tracked. Use `/add TICKER portfolio` to add some."]
+        return ["No companies tracked. Use `/add TICKER watchlist` to get started."]
 
     sections: list[str] = []
 
     now = datetime.utcnow().strftime("%A, %B %d, %Y")
     sections.append(
         f"**Weekly Portfolio Deep Dive — {now}**\n"
-        f"{len(portfolio)} portfolio companies"
+        f"{len(portfolio)} companies"
     )
 
     sections.append("━━━ **PORTFOLIO** ━━━")
     for idx, company in enumerate(portfolio, 1):
         log.info("[portfolio] %d/%d: %s", idx, len(portfolio), company.ticker)
         try:
-            snap = await build_snapshot(company.ticker, list_type="portfolio", include_sec=True)
+            snap = await build_snapshot(company.ticker, list_type=company.list_type, include_sec=True)
             analysis = await run_portfolio_briefing_section(snap)
             sections.append(analysis)
             log.info("[portfolio] %d/%d: %s done", idx, len(portfolio), company.ticker)

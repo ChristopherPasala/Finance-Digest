@@ -1,15 +1,73 @@
-<h1>Company Analyses</h1>
-<% if (posts.length === 0) { %>
-  <p>No analyses yet.</p>
-<% } else { %>
-  <ul style="list-style:none; padding:0;">
-    <% posts.forEach(post => { %>
-      <li style="margin-bottom: 16px;">
-        <a href="/posts/<%= post.slug %>.html" style="font-size:1.1rem; font-weight:600; text-decoration:none; color:#0057b7;">
-          <%= post.title %>
-        </a>
-        <span style="display:block; color:#888; font-size:0.8rem;">Updated: <%= post.updated_at %></span>
-      </li>
-    <% }) %>
-  </ul>
-<% } %>
+<%
+function toRoman(n) {
+  var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+  var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+  var r = '';
+  vals.forEach(function(v, i) { while (n >= v) { r += syms[i]; n -= v; } });
+  return r;
+}
+%>
+
+<!-- ── Hero ── -->
+<section class="hero" aria-label="Introduction">
+  <div class="hero-inner">
+
+    <!-- Left: animated heading + subhead + buttons -->
+    <div class="hero-left">
+      <div class="hero-label">Financial Intelligence Platform</div>
+      <h1 class="hero-heading" id="heroHeading" aria-label="Financial Intelligence."></h1>
+      <p class="hero-sub" id="heroSub">
+        Deep-dive analyses, daily briefings, and a live paper portfolio &mdash; powered by LLM research.
+      </p>
+      <div class="hero-btns" id="heroBtns">
+        <a href="#analyses" class="hero-btn hero-btn--primary">Read Analyses</a>
+        <a href="/portfolio.html" class="hero-btn hero-btn--ghost">View Portfolio</a>
+      </div>
+    </div>
+
+    <!-- Right: glass tag card -->
+    <div class="hero-right" id="heroCard">
+      <div class="hero-card liquid-glass">
+        <div class="hero-card-line">Investing.</div>
+        <div class="hero-card-line">Building.</div>
+        <div class="hero-card-line">Advisory.</div>
+        <div class="hero-card-tag">Est. 2024</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="greek-key-divider" role="presentation"></div>
+</section>
+
+<!-- ── Analyses listing ── -->
+<section id="analyses">
+  <h2 class="section-list-hd">Company Analyses</h2>
+  <% if (posts.length === 0) { %>
+    <p style="color: var(--text-muted);">No analyses yet.</p>
+  <% } else { %>
+    <ul class="post-grid">
+      <% posts.forEach(function(post, i) {
+        var excerpt = post.body
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 160);
+        if (excerpt.length === 160) excerpt = excerpt.slice(0, excerpt.lastIndexOf(' ')) + '…';
+        var dateStr = (post.updated_at || '').split('T')[0] || post.updated_at;
+        var badge = i === 0 ? 'Latest Analysis' : 'Company Analysis';
+      %>
+        <li>
+          <a href="/posts/<%= post.slug %>.html" class="post-card">
+            <span class="post-card-badge"><%= badge %></span>
+            <h3 class="post-card-title"><%= post.title %></h3>
+            <p class="post-card-excerpt"><%= excerpt %></p>
+            <div class="post-card-footer">
+              <span class="post-card-date"><%= dateStr %></span>
+              <span class="post-card-cta">Read Analysis <span aria-hidden="true">→</span></span>
+            </div>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>

@@ -1,32 +1,81 @@
-<h1>Briefings</h1>
-
-<% if (todayScores && todayScores.length > 0) { %>
-  <h2 class="section-header">Today's Watchlist — Ranked by Opportunity</h2>
-  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:0.5rem; margin-bottom:2rem;">
-    <% todayScores.forEach((s, i) => {
-      const color = s.score >= 9 ? '#22c55e' : s.score >= 6 ? '#f59e0b' : s.score >= 3 ? '#3b82f6' : '#475569';
-    %>
-      <div style="background:#1e293b; border-radius:0.4rem; border-left:3px solid <%= color %>; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.5rem;">
-        <span style="font-size:0.68rem; color:#475569; min-width:1.1rem;"><%= i+1 %>.</span>
-        <span style="font-weight:700; color:#f1f5f9; font-size:0.9rem; letter-spacing:0.03em;"><%= s.ticker %></span>
-        <span style="margin-left:auto; font-size:0.75rem; color:<%= color %>; font-weight:600;"><%= s.score %>/13</span>
-      </div>
-    <% }) %>
-  </div>
-<% } %>
-
-<h2 class="section-header">All Briefings</h2>
-<% if (briefings.length === 0) { %>
-  <p style="color:#64748b;">No briefings yet. They are posted automatically each morning.</p>
+<% if (!latestBriefing) { %>
+  <h1>Briefings</h1>
+  <p style="color:var(--text-muted);">No briefings yet. They are posted automatically each morning.</p>
 <% } else { %>
-  <ul style="list-style:none; padding:0; margin:0;">
-    <% briefings.forEach(b => { %>
-      <li style="padding:0.75rem 0; border-bottom:1px solid #1e293b; display:flex; align-items:baseline; gap:1rem;">
-        <a href="/posts/<%= b.slug %>.html" style="font-size:0.95rem; font-weight:600; text-decoration:none; color:#60a5fa; flex:1;">
-          <%= b.title %>
-        </a>
-        <span style="font-size:0.78rem; color:#475569; white-space:nowrap;"><%= b.updated_at.split('T')[0] || b.updated_at %></span>
-      </li>
-    <% }) %>
-  </ul>
+  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+    <h1 style="margin:0;"><%= latestBriefing.title %></h1>
+    <% if (historicalBriefings.length > 0) { %>
+      <button id="history-toggle" onclick="toggleHistory()"
+        style="background:none; border:1px solid var(--border-strong); color:var(--text-muted); font-size:0.8rem;
+               padding:0.3rem 0.75rem; border-radius:6px; cursor:pointer; white-space:nowrap;
+               font-family:var(--font-body); transition:color 0.15s, border-color 0.15s;">
+        Previous briefings ▾
+      </button>
+    <% } %>
+  </div>
+
+  <% if (historicalBriefings.length > 0) { %>
+  <div id="history-panel" style="display:none; background:var(--card-bg); border:1px solid var(--card-border);
+       border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem;
+       backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+    <p style="margin:0 0 0.75rem; font-size:0.75rem; text-transform:uppercase;
+              letter-spacing:0.06em; color:var(--text-muted);">Previous Briefings</p>
+    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+      <% historicalBriefings.forEach(b => { %>
+        <li>
+          <a href="/posts/<%= b.slug %>.html"
+             style="font-size:0.95rem; font-weight:600; color:var(--accent); text-decoration:none;">
+            <%= b.title %>
+          </a>
+          <span style="display:inline-block; margin-left:0.75rem; color:var(--text-muted); font-size:0.78rem;">
+            <%= b.updated_at.split('T')[0] || b.updated_at %>
+          </span>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
+
+  <% if (todayScores && todayScores.length > 0) { %>
+    <h2 class="section-header">Today's Watchlist — Ranked by Opportunity</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:0.5rem; margin-bottom:2rem;">
+      <% todayScores.forEach((s, i) => {
+        const color = s.score >= 9 ? '#2D6A4F' : s.score >= 6 ? '#C4A35A' : s.score >= 3 ? '#8B4513' : '#8A7060';
+      %>
+        <div style="background:var(--card-bg); border-radius:0.4rem; border-left:3px solid <%= color %>; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.5rem; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
+          <span style="font-size:0.68rem; color:var(--text-muted); min-width:1.1rem;"><%= i+1 %>.</span>
+          <span style="font-weight:700; color:var(--text-primary); font-size:0.9rem; letter-spacing:0.03em;"><%= s.ticker %></span>
+          <span style="margin-left:auto; font-size:0.75rem; color:<%= color %>; font-weight:600;"><%= s.score %>/13</span>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <div id="briefing-content">
+    <div style="color:var(--text-muted); font-size:0.875rem; padding:2rem 0; text-align:center;">Loading briefing…</div>
+  </div>
+
+  <script>
+    function toggleHistory() {
+      const panel = document.getElementById('history-panel');
+      const btn = document.getElementById('history-toggle');
+      const open = panel.style.display !== 'none';
+      panel.style.display = open ? 'none' : 'block';
+      btn.textContent = open ? 'Previous briefings ▾' : 'Previous briefings ▴';
+    }
+
+    fetch('/posts/<%= latestBriefing.slug %>.html')
+      .then(r => r.text())
+      .then(html => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const main = doc.querySelector('main');
+        if (main) {
+          document.getElementById('briefing-content').innerHTML = main.innerHTML;
+        }
+      })
+      .catch(() => {
+        document.getElementById('briefing-content').innerHTML =
+          '<p style="color:var(--red);">Could not load briefing content.</p>';
+      });
+  </script>
 <% } %>
